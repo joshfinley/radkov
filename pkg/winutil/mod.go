@@ -1,6 +1,8 @@
 package winutil
 
 import (
+	"strings"
+
 	"golang.org/x/sys/windows"
 )
 
@@ -57,4 +59,14 @@ func GetProcModules(hproc windows.Handle) (*[]WinMod, error) {
 	}
 
 	return &winmods, nil
+}
+
+func FindModule(name string, mods *[]WinMod) *WinMod {
+	for _, mod := range *mods {
+		if strings.Contains(mod.FullDllName, name) {
+			return &mod
+		}
+	}
+
+	return nil
 }

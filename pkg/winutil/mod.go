@@ -18,7 +18,7 @@ func GetProcModules(hproc windows.Handle) (*[]WinMod, error) {
 	windows.EnumProcessModules(hproc, &hmods[0], 1024, &cbn)
 	cbn = cbn / 8
 	hmods = append([]windows.Handle(nil), hmods[:cbn]...)
-	namebuf := make([]uint16, 256)
+	namebuf := make([]uint16, 256*2)
 	for i := 0; i < int(cbn); i++ {
 		// _, _, err := winapiGetModuleFileNameEx.Call(
 		// 	uintptr(hproc),

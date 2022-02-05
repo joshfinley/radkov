@@ -38,6 +38,14 @@ func NewUnityGame(process string, gomOffset uintptr) (*UnityGame, error) {
 		GameObjectManager: gom,
 		LocalGameWorld:    0,
 	}
+
+	lgw, err := ug.FindLocalGameWorld()
+	if err != nil {
+		return nil, err
+	}
+
+	ug.LocalGameWorld = lgw
+	return ug, nil
 }
 
 func (ug *UnityGame) FindLocalGameWorld() (BaseObjPtr, error) {

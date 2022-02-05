@@ -17,6 +17,9 @@ func (bg *BaseGame) FindGameObjMgr(offset uintptr) (GameObjMgr, error) {
 	if err != nil {
 		return 0, err
 	}
+	if gom == 0 {
+		return 0, errors.New("failed to find GameObjectManager")
+	}
 
 	return GameObjMgr(gom), nil
 }

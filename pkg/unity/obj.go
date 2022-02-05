@@ -1,7 +1,6 @@
 package unity
 
 import (
-	"encoding/binary"
 	"errors"
 
 	"gitlab.clan-ac.xyz/ac-gameworx/radkov/pkg/winutil"
@@ -60,11 +59,10 @@ func (bg *BaseGame) GetNextBaseObj(obj BaseObjPtr) (BaseObjPtr, error) {
 type GameObjPtr uintptr
 
 func (bg *BaseGame) GetGameObjName(obj GameObjPtr) (string, error) {
-	nameAddrBuf, err := bg.Proc.Read(uintptr(obj)+0x60, 8)
+	nameAddr, err := bg.Proc.ReadPtr64(uintptr(obj) + 0x60)
 	if err != nil {
 		return "", err
 	}
-	nameAddr := binary.LittleEndian.Uint64(nameAddrBuf)
 	nameBuf, err := bg.Proc.Read(uintptr(nameAddr), 100)
 	if err != nil {
 		return "", err

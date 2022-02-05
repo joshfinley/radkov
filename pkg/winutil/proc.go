@@ -1,6 +1,8 @@
 package winutil
 
 import (
+	"encoding/binary"
+
 	"golang.org/x/sys/windows"
 )
 
@@ -48,4 +50,21 @@ func (p *WinProc) Read(addr uintptr, size uint32) ([]byte, error) {
 	}
 
 	return buf, err
+}
+
+func (p *WinProc) ReadPtr64(addr uintptr) (uintptr, error) {
+	buf := make([]byte, 8)
+	var read uintptr = 0
+	err := windows.ReadProcessMemory(
+		p.Handle,
+		addr,
+		&buf[0],
+		uintptr(8),
+		&read)
+	if err != nil {
+		return 0, err
+	}
+
+	ptr := uintptr(binary.LittleEndian.Uint64(buf))
+	return ptr, err
 }

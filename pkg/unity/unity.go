@@ -2,6 +2,7 @@ package unity
 
 import (
 	"errors"
+	"log"
 	"strings"
 
 	"gitlab.clan-ac.xyz/ac-gameworx/radkov/pkg/winutil"
@@ -49,27 +50,38 @@ func NewUnityGame(process string, gomOffset uintptr) (*UnityGame, error) {
 }
 
 func (ug *UnityGame) FindLocalGameWorld() (BaseObjPtr, error) {
-	activeObj, err := ug.BaseGame.GetFirstActiveObj(ug.GameObjectManager)
+	activeObj, err := ug.BaseGame.GetLastActiveObj(ug.GameObjectManager)
 	if err != nil {
 		return 0, err
 	}
 
 	i := 0
 	for uintptr(activeObj) != uintptr(ug.GameObjectManager) {
+		goto loop
+	inc:
+		{
+			//i++
+			continue
+		}
+	loop:
+		// TODO fix this hack to keep searching for GameWorld
+		//time.Sleep(1 * time.Second)
 		if i > 50000 {
 			return 0, errors.New("GameWorld not found")
 		}
 		gameObj, err := ug.BaseGame.GetGameObj(uintptr(activeObj))
 
 		if err != nil {
-			return 0, err
+			goto inc
 		}
 
 		activeObjName, err := ug.BaseGame.GetGameObjName(gameObj)
 		if err != nil {
-			return 0, err
+			goto inc
 		}
 
+		strObjName := string(activeObjName)
+		log.Println(strObjName)
 		if strings.Contains(activeObjName, "GameWorld") {
 			return activeObj, nil
 		}
@@ -78,6 +90,7 @@ func (ug *UnityGame) FindLocalGameWorld() (BaseObjPtr, error) {
 		if err != nil {
 			return 0, err
 		}
+		goto inc
 	}
 
 	return 0, errors.New("GameWorld not found")

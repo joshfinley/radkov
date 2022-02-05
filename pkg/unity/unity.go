@@ -10,50 +10,50 @@ import (
 //
 
 type UnityGame struct {
-	Base              *BaseGame  // BaseGame
-	GameObjectManager GameObjMgr // GameObjectManager
-	LocalGameWorld    *BaseObj   // Local game world
+	BaseGame          *BaseGame   // BaseGame
+	GameObjectManager GameObjMgr  // GameObjectManager
+	LocalGameWorld    *BaseObjPtr // Local game world
 }
 
-func (ug *UnityGame) FindLocalGameWorld() (*BaseObj, error) {
-	activeObj, err := ug.GameObjectManager.GetFirstActiveObj()
+func (ug *UnityGame) FindLocalGameWorld() (BaseObjPtr, error) {
+	activeObj, err := ug.BaseGame.GetFirstActiveObj(ug.GameObjectManager)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
 
 	i := 0
-	for activeObj.Addr != ug.GameObjectManager.Addr {
+	for uintptr(activeObj) != uintptr(ug.GameObjectManager) {
 		if i > 50000 {
-			return nil, errors.New("GameWorld not found")
+			return 0, errors.New("GameWorld not found")
+		}
+		gameObj, err := ug.BaseGame.GetGameObj()
+
+		if err != nil {
+			return 0, err
 		}
 
-		gameObj, err := activeObj.GetGameObj()
+		activeObjName, err := ug.BaseGame.GetGameObjName(gameObj)
 		if err != nil {
-			return nil, err
-		}
-
-		activeObjName, err := gameObj.GetGameObjName()
-		if err != nil {
-			return nil, err
+			return 0, err
 		}
 
 		if strings.Contains(activeObjName, "GameWorld") {
 			return activeObj, nil
 		}
 
-		activeObj, err = activeObj.GetNextBaseObj()
+		activeObj, err = ug.BaseGame.GetNextBaseObj(activeObj)
 		if err != nil {
-			return nil, err
+			return 0, err
 		}
 	}
 
-	return nil, errors.New("GameWorld not found")
+	return 0, errors.New("GameWorld not found")
 }
 
 func (ug *UnityGame) GameWorldActive() bool {
 	gameWorld, err := ug.FindLocalGameWorld()
 	if err == nil {
-		return gameWorld != nil
+		return gameWorld != 0
 	}
 	return false
 }

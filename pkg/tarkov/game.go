@@ -25,6 +25,8 @@ func (tg *TarkovGame) GameMain() error {
 		Proc: tg.UnityGame.Base.Proc,
 		Addr: gomAddr,
 	}
+	// TODO
+	// Debug why this call fails... Are offsets up to date?
 	lgw, err := tg.UnityGame.FindLocalGameWorld()
 	if err != nil {
 		return err

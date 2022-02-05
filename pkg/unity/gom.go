@@ -4,48 +4,36 @@ package unity
 // GameObjMgr Types and Functions
 //
 
-type GameObjMgr BaseObj
+type GameObjMgr BaseObjPtr
 
-func (gom *GameObjMgr) GetLastTaggedObj() (*BaseObj, error) {
-	addr, err := gom.Proc.ReadPtr64(gom.Addr)
+func (bg *BaseGame) GetLastTaggedObj(gom GameObjMgr) (BaseObjPtr, error) {
+	addr, err := bg.Proc.ReadPtr64(uintptr(gom))
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
-	return &BaseObj{
-		Proc: gom.Proc,
-		Addr: addr,
-	}, nil
+	return BaseObjPtr(addr), nil
 }
 
-func (gom *GameObjMgr) GetFirstTaggedObj() (*BaseObj, error) {
-	addr, err := gom.Proc.ReadPtr64(gom.Addr + 0x8)
+func (bg *BaseGame) GetFirstTaggedObj(gom GameObjMgr) (BaseObjPtr, error) {
+	addr, err := bg.Proc.ReadPtr64(uintptr(gom) + 0x8)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
-	return &BaseObj{
-		Proc: gom.Proc,
-		Addr: addr,
-	}, nil
+	return BaseObjPtr(addr), nil
 }
 
-func (gom *GameObjMgr) GetLastActiveObj() (*BaseObj, error) {
-	addr, err := gom.Proc.ReadPtr64(gom.Addr + 0x10)
+func (bg *BaseGame) GetLastActiveObj(gom GameObjMgr) (BaseObjPtr, error) {
+	addr, err := bg.Proc.ReadPtr64(uintptr(gom) + 0x10)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
-	return &BaseObj{
-		Proc: gom.Proc,
-		Addr: addr,
-	}, nil
+	return BaseObjPtr(addr), nil
 }
 
-func (gom *GameObjMgr) GetFirstActiveObj() (*BaseObj, error) {
-	addr, err := gom.Proc.ReadPtr64(gom.Addr + 0x18)
+func (bg *BaseGame) GetFirstActiveObj(gom GameObjMgr) (BaseObjPtr, error) {
+	addr, err := bg.Proc.ReadPtr64(uintptr(gom) + 0x18)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
-	return &BaseObj{
-		Proc: gom.Proc,
-		Addr: addr,
-	}, nil
+	return BaseObjPtr(addr), nil
 }

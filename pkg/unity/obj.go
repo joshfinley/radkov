@@ -2,6 +2,7 @@ package unity
 
 import (
 	"encoding/binary"
+	"errors"
 
 	"gitlab.clan-ac.xyz/ac-gameworx/radkov/pkg/winutil"
 )
@@ -11,9 +12,20 @@ import (
 //
 
 type BaseGame struct {
-	Proc   *winutil.WinProc // process associated with the memory location
-	Addr   uintptr          // address of the memory object
-	Module *winutil.WinMod  // base module of game
+	Proc *winutil.WinProc // process associated with the game
+	Mod  *winutil.WinMod  // dll associated with the game
+}
+
+func NewBaseGame(proc *winutil.WinProc) (*BaseGame, error) {
+	gameMod := winutil.FindModule("UnityPlayer.dll", &proc.Modules)
+	if gameMod == nil {
+		return nil, errors.New("could not locate UnityPlayer.dll")
+	}
+
+	return &BaseGame{
+		Proc: proc,
+		Mod:  gameMod,
+	}, nil
 }
 
 func (b *BaseGame) GameMain() {}
@@ -25,8 +37,8 @@ func (b *BaseGame) GameMain() {}
 // Address of an object
 type BaseObjPtr uintptr
 
-func (bg *BaseGame) GetGameObj() (GameObjPtr, error) {
-	addr, err := bg.Proc.ReadPtr64(bg.Addr + 0x10)
+func (bg *BaseGame) GetGameObj(addr uintptr) (GameObjPtr, error) {
+	addr, err := bg.Proc.ReadPtr64(addr + 0x10)
 	if err != nil {
 		return 0, err
 	}

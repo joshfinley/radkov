@@ -3,6 +3,8 @@ package unity
 import (
 	"errors"
 	"strings"
+
+	"gitlab.clan-ac.xyz/ac-gameworx/radkov/pkg/winutil"
 )
 
 //
@@ -10,9 +12,32 @@ import (
 //
 
 type UnityGame struct {
-	BaseGame          *BaseGame   // BaseGame
-	GameObjectManager GameObjMgr  // GameObjectManager
-	LocalGameWorld    *BaseObjPtr // Local game world
+	BaseGame          *BaseGame  // BaseGame
+	GameObjectManager GameObjMgr // GameObjectManager
+	LocalGameWorld    BaseObjPtr // Local game world
+}
+
+func NewUnityGame(process string, gomOffset uintptr) (*UnityGame, error) {
+	proc, err := winutil.NewWinProc(process)
+	if err != nil {
+		return nil, err
+	}
+
+	bg, err := NewBaseGame(proc)
+	if err != nil {
+		return nil, err
+	}
+
+	gom, err := bg.FindGameObjMgr(gomOffset)
+	if err != nil {
+		return nil, err
+	}
+
+	ug := &UnityGame{
+		BaseGame:          bg,
+		GameObjectManager: gom,
+		LocalGameWorld:    0,
+	}
 }
 
 func (ug *UnityGame) FindLocalGameWorld() (BaseObjPtr, error) {
@@ -26,7 +51,7 @@ func (ug *UnityGame) FindLocalGameWorld() (BaseObjPtr, error) {
 		if i > 50000 {
 			return 0, errors.New("GameWorld not found")
 		}
-		gameObj, err := ug.BaseGame.GetGameObj()
+		gameObj, err := ug.BaseGame.GetGameObj(uintptr(activeObj))
 
 		if err != nil {
 			return 0, err

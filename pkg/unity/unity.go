@@ -19,6 +19,7 @@ type UnityGame struct {
 }
 
 func NewUnityGame(process string, gomOffset uintptr) (*UnityGame, error) {
+
 	proc, err := winutil.NewWinProc(process)
 	if err != nil {
 		return nil, err
@@ -28,11 +29,17 @@ func NewUnityGame(process string, gomOffset uintptr) (*UnityGame, error) {
 	if err != nil {
 		return nil, err
 	}
+	log.Printf(
+		"Game process found. UnityPlayer.dll base:0x%x",
+		bg.Mod.ModuleBase)
 
 	gom, err := bg.FindGameObjMgr(gomOffset)
 	if err != nil {
 		return nil, err
 	}
+	log.Printf(
+		"GameObjectManager found:UnityPlayer.dll+0x%x",
+		gomOffset)
 
 	ug := &UnityGame{
 		BaseGame:          bg,
@@ -44,15 +51,25 @@ func NewUnityGame(process string, gomOffset uintptr) (*UnityGame, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	log.Printf("Local Game World found:0x%x", lgw)
 	ug.LocalGameWorld = lgw
 	return ug, nil
 }
 
-//
-// The answer is in here somewhere:
+// Update the pointer to the GameWorld object
+func (ug *UnityGame) RefreshGameWorld() error {
+	gw, err := ug.FindLocalGameWorld()
+	if err != nil {
+		return err
+	}
+	ug.LocalGameWorld = gw
+	return nil
+}
+
+// Get the GameWorld object from the GameObjectManager
+// Thanks to:
 // https://www.unknowncheats.me/forum/escape-from-tarkov/226519-escape-tarkov-reversal-structs-offsets-310.html#post3353153
-// Ssee #6195
+// See #6195
 func (ug *UnityGame) FindLocalGameWorld() (uintptr, error) {
 	activeObj, err := ug.BaseGame.GetFirstActiveObj(
 		ug.GameObjectManager)
@@ -60,9 +77,6 @@ func (ug *UnityGame) FindLocalGameWorld() (uintptr, error) {
 		return 0, err
 	}
 
-	// TODO
-	// Ensure that the local game world is the correct one...
-	// Maybe not the responsibility of this function?
 	i := 0
 	for uintptr(activeObj) != uintptr(ug.GameObjectManager) {
 		goto loop
@@ -76,8 +90,11 @@ func (ug *UnityGame) FindLocalGameWorld() (uintptr, error) {
 			continue
 		}
 	loop:
-		// TODO fix this hack to keep searching for GameWorld
-		//time.Sleep(1 * time.Second)
+		// TODO
+		// Ensure that the local game world is the correct one...
+		// Maybe not the responsibility of this function?
+		// Below is a hack to make sure we dont look terribly too
+		// far...
 		if i > 50000 {
 			return 0, errors.New("GameWorld not found")
 		}
@@ -92,7 +109,6 @@ func (ug *UnityGame) FindLocalGameWorld() (uintptr, error) {
 		}
 
 		//strObjName := string(activeObjName)
-		log.Println(activeObjName)
 		if strings.Contains(activeObjName, "GameWorld") {
 			return activeObj, nil
 		}

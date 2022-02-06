@@ -15,7 +15,7 @@ import (
 type UnityGame struct {
 	BaseGame          *BaseGame  // BaseGame
 	GameObjectManager GameObjMgr // GameObjectManager
-	LocalGameWorld    BaseObjPtr // Local game world
+	LocalGameWorld    uintptr    // Local game world
 }
 
 func NewUnityGame(process string, gomOffset uintptr) (*UnityGame, error) {
@@ -49,18 +49,30 @@ func NewUnityGame(process string, gomOffset uintptr) (*UnityGame, error) {
 	return ug, nil
 }
 
-func (ug *UnityGame) FindLocalGameWorld() (BaseObjPtr, error) {
-	activeObj, err := ug.BaseGame.GetLastActiveObj(ug.GameObjectManager)
+//
+// The answer is in here somewhere:
+// https://www.unknowncheats.me/forum/escape-from-tarkov/226519-escape-tarkov-reversal-structs-offsets-310.html#post3353153
+// Ssee #6195
+func (ug *UnityGame) FindLocalGameWorld() (uintptr, error) {
+	activeObj, err := ug.BaseGame.GetFirstActiveObj(
+		ug.GameObjectManager)
 	if err != nil {
 		return 0, err
 	}
 
+	// TODO
+	// Ensure that the local game world is the correct one...
+	// Maybe not the responsibility of this function?
 	i := 0
 	for uintptr(activeObj) != uintptr(ug.GameObjectManager) {
 		goto loop
 	inc:
 		{
 			//i++
+			activeObj, err = ug.BaseGame.GetNextBaseObj(activeObj)
+			if err != nil {
+				return 0, err
+			}
 			continue
 		}
 	loop:
@@ -70,7 +82,6 @@ func (ug *UnityGame) FindLocalGameWorld() (BaseObjPtr, error) {
 			return 0, errors.New("GameWorld not found")
 		}
 		gameObj, err := ug.BaseGame.GetGameObj(uintptr(activeObj))
-
 		if err != nil {
 			goto inc
 		}
@@ -80,15 +91,10 @@ func (ug *UnityGame) FindLocalGameWorld() (BaseObjPtr, error) {
 			goto inc
 		}
 
-		strObjName := string(activeObjName)
-		log.Println(strObjName)
+		//strObjName := string(activeObjName)
+		log.Println(activeObjName)
 		if strings.Contains(activeObjName, "GameWorld") {
 			return activeObj, nil
-		}
-
-		activeObj, err = ug.BaseGame.GetNextBaseObj(activeObj)
-		if err != nil {
-			return 0, err
 		}
 		goto inc
 	}

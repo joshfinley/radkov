@@ -29,41 +29,28 @@ func NewBaseGame(proc *winutil.WinProc) (*BaseGame, error) {
 
 func (b *BaseGame) GameMain() {}
 
-//
-// BaseObj Type and Functions
-//
-
-// Address of an object
-type BaseObjPtr uintptr
-
-func (bg *BaseGame) GetGameObj(addr uintptr) (GameObjPtr, error) {
+func (bg *BaseGame) GetGameObj(addr uintptr) (uintptr, error) {
 	addr, err := bg.Proc.ReadPtr64(addr + 0x10)
 	if err != nil {
 		return 0, err
 	}
-	return GameObjPtr(addr), nil
+	return addr, nil
 }
 
-func (bg *BaseGame) GetNextBaseObj(obj BaseObjPtr) (BaseObjPtr, error) {
-	addr, err := bg.Proc.ReadPtr64(uintptr(obj) + 0x8)
+func (bg *BaseGame) GetNextBaseObj(obj uintptr) (uintptr, error) {
+	addr, err := bg.Proc.ReadPtr64(obj + 0x8)
 	if err != nil {
 		return 0, err
 	}
-	return BaseObjPtr(addr), nil
+	return addr, nil
 }
 
-//
-// GameObj Type and Functions
-//
-
-type GameObjPtr uintptr
-
-func (bg *BaseGame) GetGameObjName(obj GameObjPtr) (string, error) {
-	nameAddr, err := bg.Proc.ReadPtr64(uintptr(obj) + 0x60)
+func (bg *BaseGame) GetGameObjName(obj uintptr) (string, error) {
+	nameAddr, err := bg.Proc.ReadPtr64(obj + 0x60)
 	if err != nil {
 		return "", err
 	}
-	nameBuf, err := bg.Proc.Read(uintptr(nameAddr), 100)
+	nameBuf, err := bg.Proc.Read(nameAddr, 100)
 	if err != nil {
 		return "", err
 	}
@@ -71,8 +58,8 @@ func (bg *BaseGame) GetGameObjName(obj GameObjPtr) (string, error) {
 	return string(nameBuf), nil
 }
 
-func (bg *BaseGame) GetGameComponentAddr(obj GameObjPtr) (uintptr, error) {
-	objclass, err := bg.Proc.ReadPtr64(uintptr(obj) + 0x30)
+func (bg *BaseGame) GetGameComponentAddr(obj uintptr) (uintptr, error) {
+	objclass, err := bg.Proc.ReadPtr64(obj + 0x30)
 	if err != nil {
 		return 0, err
 	}

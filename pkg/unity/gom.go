@@ -6,7 +6,7 @@ import "errors"
 // GameObjMgr Types and Functions
 //
 
-type GameObjMgr BaseObjPtr
+type GameObjMgr uintptr
 
 func (bg *BaseGame) FindGameObjMgr(offset uintptr) (GameObjMgr, error) {
 	if bg.Proc == nil || bg.Mod == nil {
@@ -24,34 +24,34 @@ func (bg *BaseGame) FindGameObjMgr(offset uintptr) (GameObjMgr, error) {
 	return GameObjMgr(gom), nil
 }
 
-func (bg *BaseGame) GetLastTaggedObj(gom GameObjMgr) (BaseObjPtr, error) {
+func (bg *BaseGame) GetLastTaggedObj(gom GameObjMgr) (uintptr, error) {
 	addr, err := bg.Proc.ReadPtr64(uintptr(gom))
 	if err != nil {
 		return 0, err
 	}
-	return BaseObjPtr(addr), nil
+	return uintptr(addr), nil
 }
 
-func (bg *BaseGame) GetFirstTaggedObj(gom GameObjMgr) (BaseObjPtr, error) {
+func (bg *BaseGame) GetFirstTaggedObj(gom GameObjMgr) (uintptr, error) {
 	addr, err := bg.Proc.ReadPtr64(uintptr(gom) + 0x8)
 	if err != nil {
 		return 0, err
 	}
-	return BaseObjPtr(addr), nil
+	return uintptr(addr), nil
 }
 
-func (bg *BaseGame) GetLastActiveObj(gom GameObjMgr) (BaseObjPtr, error) {
-	addr, err := bg.Proc.ReadPtr64(uintptr(gom) + 0x10)
+func (bg *BaseGame) GetLastActiveObj(gom GameObjMgr) (uintptr, error) {
+	addr, err := bg.Proc.ReadPtr64(uintptr(gom) + 0x20)
 	if err != nil {
 		return 0, err
 	}
-	return BaseObjPtr(addr), nil
+	return uintptr(addr), nil
 }
 
-func (bg *BaseGame) GetFirstActiveObj(gom GameObjMgr) (BaseObjPtr, error) {
-	addr, err := bg.Proc.ReadPtr64(uintptr(gom) + 0x18)
+func (bg *BaseGame) GetFirstActiveObj(gom GameObjMgr) (uintptr, error) {
+	addr, err := bg.Proc.ReadPtr64(uintptr(gom) + 0x28)
 	if err != nil {
 		return 0, err
 	}
-	return BaseObjPtr(addr), nil
+	return uintptr(addr), nil
 }

@@ -3,7 +3,7 @@ package unity
 import "errors"
 
 //
-// uintptr Types and Functions
+// Functions reading offsets of GameObjectManager
 //
 
 func (ug *UnityGame) FindGameObjMgr(offset uintptr) (uintptr, error) {

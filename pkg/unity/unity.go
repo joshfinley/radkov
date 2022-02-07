@@ -2,7 +2,6 @@ package unity
 
 import (
 	"errors"
-	"log"
 	"strings"
 
 	"gitlab.clan-ac.xyz/ac-gameworx/radkov/pkg/winutil"
@@ -13,45 +12,48 @@ import (
 //
 
 type UnityGame struct {
-	BaseGame          *BaseGame  // BaseGame
-	GameObjectManager GameObjMgr // GameObjectManager
-	LocalGameWorld    uintptr    // Local game world
+	Proc              *winutil.WinProc // process associated with the game
+	Mod               *winutil.WinMod  // dll associated with the game
+	GameObjectManager uintptr          // GameObjectManager address
+	LocalGameWorld    uintptr          // Local game world
+	Offsets           Offsets
 }
 
-func NewUnityGame(process string, gomOffset uintptr) (*UnityGame, error) {
+func NewUnityGame(process string, offsets Offsets) (*UnityGame, error) {
+	err := ValidateOffsetStruct(offsets)
+	if err != nil {
+		return nil, err
+	}
 
 	proc, err := winutil.NewWinProc(process)
 	if err != nil {
 		return nil, err
 	}
 
-	bg, err := NewBaseGame(proc)
-	if err != nil {
-		return nil, err
+	gameMod := winutil.FindModule("UnityPlayer.dll", &proc.Modules)
+	if gameMod == nil {
+		return nil, errors.New("could not locate UnityPlayer.dll")
 	}
-	log.Printf(
-		"Game process found. UnityPlayer.dll base:0x%x",
-		bg.Mod.ModuleBase)
-
-	gom, err := bg.FindGameObjMgr(gomOffset)
-	if err != nil {
-		return nil, err
-	}
-	log.Printf(
-		"GameObjectManager found:UnityPlayer.dll+0x%x",
-		gomOffset)
 
 	ug := &UnityGame{
-		BaseGame:          bg,
-		GameObjectManager: gom,
+		Proc:              proc,
+		Mod:               gameMod,
+		GameObjectManager: 0,
 		LocalGameWorld:    0,
+		Offsets:           offsets,
 	}
+
+	gom, err := ug.FindGameObjMgr(offsets.GameObjMgr)
+	if err != nil {
+		return nil, err
+	}
+	ug.GameObjectManager = gom
 
 	lgw, err := ug.FindLocalGameWorld()
 	if err != nil {
-		return nil, err
+		ug.LocalGameWorld = 0
+		return ug, err
 	}
-	log.Printf("Local Game World found:0x%x", lgw)
 	ug.LocalGameWorld = lgw
 	return ug, nil
 }
@@ -71,8 +73,8 @@ func (ug *UnityGame) RefreshGameWorld() error {
 // https://www.unknowncheats.me/forum/escape-from-tarkov/226519-escape-tarkov-reversal-structs-offsets-310.html#post3353153
 // See #6195
 func (ug *UnityGame) FindLocalGameWorld() (uintptr, error) {
-	activeObj, err := ug.BaseGame.GetFirstActiveObj(
-		ug.GameObjectManager)
+	activeObj, err := ug.GetFirstActiveObj(
+		ug.GameObjectManager, ug.Offsets.FirstActiveObj)
 	if err != nil {
 		return 0, err
 	}
@@ -82,8 +84,8 @@ func (ug *UnityGame) FindLocalGameWorld() (uintptr, error) {
 		goto loop
 	inc:
 		{
-			//i++
-			activeObj, err = ug.BaseGame.GetNextBaseObj(activeObj)
+			i++
+			activeObj, err = ug.GetNextBaseObj(activeObj)
 			if err != nil {
 				return 0, err
 			}
@@ -96,14 +98,14 @@ func (ug *UnityGame) FindLocalGameWorld() (uintptr, error) {
 		// Below is a hack to make sure we dont look terribly too
 		// far...
 		if i > 50000 {
-			return 0, errors.New("GameWorld not found")
+			return 0, ErrorGameWorldNotFound
 		}
-		gameObj, err := ug.BaseGame.GetGameObj(uintptr(activeObj))
+		gameObj, err := ug.GetGameObj(uintptr(activeObj))
 		if err != nil {
 			goto inc
 		}
 
-		activeObjName, err := ug.BaseGame.GetGameObjName(gameObj)
+		activeObjName, err := ug.GetGameObjName(gameObj)
 		if err != nil {
 			goto inc
 		}

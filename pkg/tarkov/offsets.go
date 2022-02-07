@@ -5,5 +5,7 @@ package tarkov
 //
 
 const (
-	OffsetGameObjectManager = uintptr(0x156b598)
+	OffsetGameObjectManager   = uintptr(0x17F8D28)
+	GameWorldOffsetPlayerList = uintptr(0x80)
+	PlayerListOffsetSize      = uintptr(0x18)
 )

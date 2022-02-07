@@ -1,73 +1,97 @@
 package tarkov
 
 import (
-	"errors"
+	"encoding/binary"
+	"log"
+	"os"
+	"time"
 
 	"gitlab.clan-ac.xyz/ac-gameworx/radkov/pkg/unity"
-	"gitlab.clan-ac.xyz/ac-gameworx/radkov/pkg/winutil"
 )
 
-type TarkovGame struct {
-	UnityGame *unity.UnityGame
+var logger = log.New(os.Stdout, "TARKOV: ", 0)
+
+func NewTarkovGame() (*unity.UnityGame, error) {
+	//
+	// Initialize the UnityGame, waiting as necessary
+	//
+	tg, _ := unity.NewUnityGame(
+		"EscapeFromTarkov.exe",
+		OffsetGameObjectManager)
+
+	for tg.BaseGame.Proc == nil {
+		tg, _ = unity.NewUnityGame(
+			"EscapeFromTarkov.exe",
+			OffsetGameObjectManager)
+		// Dont burn up too many cycles waiting for game start
+		time.Sleep(500 * time.Millisecond)
+	}
+	logger.Println(
+		"Found 'EscapeFromTarkov.exe'. Process ID: ",
+		tg.BaseGame.Proc.Pid)
+
+	//
+	// Wait for the GameWorld
+	//
+	err := unity.ErrorGameWorldNotFound
+	start := time.Now()
+	var elapsed time.Duration
+	for err == unity.ErrorGameWorldNotFound {
+		err = tg.RefreshGameWorld()
+		// Dont burn up too many cycles waiting for game world
+		time.Sleep(500 * time.Millisecond)
+		elapsed = time.Since(start)
+		logger.Printf(
+			"Waiting on GameWorld (%d seconds elapsed)...",
+			int(elapsed.Seconds()))
+	}
+	logger.Printf(
+		"Found GameWorld: 0x%x", tg.LocalGameWorld)
+
+	GetAllPlayers(tg)
+
+	return tg, nil
 }
 
-func (tg *TarkovGame) GameMain() error {
-	if tg.UnityGame.Base.Proc == nil || tg.UnityGame.Base.Module == nil {
-		return errors.New("tarkov process or module invalid")
-	}
+func GameMain(tg *unity.UnityGame) error {
 
-	gomAddr, err := tg.UnityGame.Base.Proc.ReadPtr64(
-		tg.UnityGame.Base.Addr + OffsetGameObjectManager)
-	if err != nil {
-		return err
-	}
-	tg.UnityGame.GameObjectManager = unity.GameObjMgr{
-		Proc: tg.UnityGame.Base.Proc,
-		Addr: gomAddr,
-	}
-	// TODO
-	// Debug why this call fails... Are offsets up to date?
-	lgw, err := tg.UnityGame.FindLocalGameWorld()
-	if err != nil {
-		return err
-	}
-	tg.UnityGame.LocalGameWorld = lgw
 	return nil
 }
 
-func LoadGame() (*TarkovGame, error) {
-	tkovProc, err := winutil.NewWinProc("EscapeFromTarkov.exe")
+func GetAllPlayers(tg *unity.UnityGame) (*[]TarkovPlayer, error) {
+	plist, err := tg.BaseGame.Proc.ReadPtr64(
+		tg.LocalGameWorld + 0x80)
 	if err != nil {
 		return nil, err
 	}
 
-	gameMod := winutil.FindModule("UnityPlayer.dll", &tkovProc.Modules)
-
-	bg := &unity.BaseGame{
-		Proc:   tkovProc,
-		Addr:   gameMod.ModuleBase,
-		Module: gameMod,
+	plistSize, err := tg.BaseGame.Proc.ReadPtr32(
+		plist + 0x18)
+	if err != nil {
+		return nil, err
 	}
 
-	if bg.Module == nil {
-		return nil, errors.New("failed to locate UnityPlayer.dll in Tarkov process")
+	plistObj, err := tg.BaseGame.Proc.ReadPtr64(
+		plist + 0x10)
+	if err != nil {
+		return nil, err
 	}
 
-	ug := &unity.UnityGame{
-		Base: bg,
-		GameObjectManager: unity.GameObjMgr{
-			Proc: tkovProc,
-			Addr: 0,
-		},
-		LocalGameWorld: &unity.BaseObj{
-			Proc: tkovProc,
-			Addr: 0,
-		},
+	pbuf, err := tg.BaseGame.Proc.Read(
+		plistObj+0x20, uint32(int32(plistSize)*8))
+	if err != nil {
+		return nil, err
 	}
 
-	tg := TarkovGame{
-		UnityGame: ug,
+	players := make([]uintptr, plistSize*8)
+
+	pidx := 0
+	for cptr := 0; cptr <= len(players); cptr = cptr + 8 {
+		players[pidx] = uintptr(
+			binary.LittleEndian.Uint64(
+				pbuf[cptr : cptr+8]))
 	}
 
-	return &tg, nil
+	return nil, nil
+
 }

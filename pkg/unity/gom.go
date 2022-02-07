@@ -3,17 +3,15 @@ package unity
 import "errors"
 
 //
-// GameObjMgr Types and Functions
+// uintptr Types and Functions
 //
 
-type GameObjMgr uintptr
-
-func (bg *BaseGame) FindGameObjMgr(offset uintptr) (GameObjMgr, error) {
-	if bg.Proc == nil || bg.Mod == nil {
+func (ug *UnityGame) FindGameObjMgr(offset uintptr) (uintptr, error) {
+	if ug.Proc == nil || ug.Mod == nil {
 		return 0, errors.New("BaseGame info not initialized")
 	}
 
-	gom, err := bg.Proc.ReadPtr64(bg.Mod.ModuleBase + offset)
+	gom, err := ug.Proc.ReadPtr64(ug.Mod.ModuleBase + offset)
 	if err != nil {
 		return 0, err
 	}
@@ -21,35 +19,35 @@ func (bg *BaseGame) FindGameObjMgr(offset uintptr) (GameObjMgr, error) {
 		return 0, errors.New("failed to find GameObjectManager")
 	}
 
-	return GameObjMgr(gom), nil
+	return uintptr(gom), nil
 }
 
-func (bg *BaseGame) GetLastTaggedObj(gom GameObjMgr) (uintptr, error) {
-	addr, err := bg.Proc.ReadPtr64(uintptr(gom))
+func (ug *UnityGame) GetLastTaggedObj(gom uintptr) (uintptr, error) {
+	addr, err := ug.Proc.ReadPtr64(gom)
 	if err != nil {
 		return 0, err
 	}
 	return uintptr(addr), nil
 }
 
-func (bg *BaseGame) GetFirstTaggedObj(gom GameObjMgr) (uintptr, error) {
-	addr, err := bg.Proc.ReadPtr64(uintptr(gom) + 0x8)
+func (ug *UnityGame) GetFirstTaggedObj(gom, offset uintptr) (uintptr, error) {
+	addr, err := ug.Proc.ReadPtr64(gom + offset)
 	if err != nil {
 		return 0, err
 	}
 	return uintptr(addr), nil
 }
 
-func (bg *BaseGame) GetLastActiveObj(gom GameObjMgr) (uintptr, error) {
-	addr, err := bg.Proc.ReadPtr64(uintptr(gom) + 0x20)
+func (ug *UnityGame) GetLastActiveObj(gom, offset uintptr) (uintptr, error) {
+	addr, err := ug.Proc.ReadPtr64(uintptr(gom) + offset)
 	if err != nil {
 		return 0, err
 	}
 	return uintptr(addr), nil
 }
 
-func (bg *BaseGame) GetFirstActiveObj(gom GameObjMgr) (uintptr, error) {
-	addr, err := bg.Proc.ReadPtr64(uintptr(gom) + 0x28)
+func (ug *UnityGame) GetFirstActiveObj(gom, offset uintptr) (uintptr, error) {
+	addr, err := ug.Proc.ReadPtr64(gom + offset)
 	if err != nil {
 		return 0, err
 	}

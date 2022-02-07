@@ -1,56 +1,29 @@
 package unity
 
-import (
-	"errors"
-
-	"gitlab.clan-ac.xyz/ac-gameworx/radkov/pkg/winutil"
-)
-
-//
-// BaseGame Type and Functions
-//
-
-type BaseGame struct {
-	Proc *winutil.WinProc // process associated with the game
-	Mod  *winutil.WinMod  // dll associated with the game
-}
-
-func NewBaseGame(proc *winutil.WinProc) (*BaseGame, error) {
-	gameMod := winutil.FindModule("UnityPlayer.dll", &proc.Modules)
-	if gameMod == nil {
-		return nil, errors.New("could not locate UnityPlayer.dll")
-	}
-
-	return &BaseGame{
-		Proc: proc,
-		Mod:  gameMod,
-	}, nil
-}
-
-func (b *BaseGame) GameMain() {}
-
-func (bg *BaseGame) GetGameObj(addr uintptr) (uintptr, error) {
-	addr, err := bg.Proc.ReadPtr64(addr + 0x10)
+func (ug *UnityGame) GetGameObj(addr uintptr) (uintptr, error) {
+	addr, err := ug.BaseGame.Proc.ReadPtr64(
+		addr + ug.Offsets.GameObject)
 	if err != nil {
 		return 0, err
 	}
 	return addr, nil
 }
 
-func (bg *BaseGame) GetNextBaseObj(obj uintptr) (uintptr, error) {
-	addr, err := bg.Proc.ReadPtr64(obj + 0x8)
+func (ug *UnityGame) GetNextBaseObj(obj uintptr) (uintptr, error) {
+	addr, err := ug.BaseGame.Proc.ReadPtr64(
+		obj + ug.Offsets.NextBaseObj)
 	if err != nil {
 		return 0, err
 	}
 	return addr, nil
 }
 
-func (bg *BaseGame) GetGameObjName(obj uintptr) (string, error) {
-	nameAddr, err := bg.Proc.ReadPtr64(obj + 0x60)
+func (ug *UnityGame) GetGameObjName(obj uintptr) (string, error) {
+	nameAddr, err := ug.BaseGame.Proc.ReadPtr64(obj + ug.Offsets.GameObjectName)
 	if err != nil {
 		return "", err
 	}
-	nameBuf, err := bg.Proc.Read(nameAddr, 100)
+	nameBuf, err := ug.BaseGame.Proc.Read(nameAddr, 100)
 	if err != nil {
 		return "", err
 	}
@@ -58,16 +31,19 @@ func (bg *BaseGame) GetGameObjName(obj uintptr) (string, error) {
 	return string(nameBuf), nil
 }
 
-func (bg *BaseGame) GetGameComponentAddr(obj uintptr) (uintptr, error) {
-	objclass, err := bg.Proc.ReadPtr64(obj + 0x30)
+func (ug *UnityGame) GetGameComponentAddr(obj uintptr) (uintptr, error) {
+	objclass, err := ug.BaseGame.Proc.ReadPtr64(
+		obj + ug.Offsets.ObjectClass)
 	if err != nil {
 		return 0, err
 	}
-	entity, err := bg.Proc.ReadPtr64(objclass + 0x18)
+	entity, err := ug.BaseGame.Proc.ReadPtr64(
+		objclass + ug.Offsets.Entity)
 	if err != nil {
 		return 0, err
 	}
-	baseEntity, err := bg.Proc.ReadPtr64(entity + 0x28)
+	baseEntity, err := ug.BaseGame.Proc.ReadPtr64(
+		entity + ug.Offsets.BaseEntity)
 	if err != nil {
 		return 0, err
 	}

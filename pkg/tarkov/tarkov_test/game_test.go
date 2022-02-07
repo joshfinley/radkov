@@ -7,12 +7,11 @@ import (
 )
 
 func TestGameMain(t *testing.T) {
-	tg, err := tarkov.LoadGame()
+	tg, err := tarkov.NewTarkovGame()
 	if err != nil {
 		t.FailNow()
 	}
 
-	err = tg.GameMain()
 	if err != nil {
 		t.FailNow()
 	}

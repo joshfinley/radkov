@@ -2,13 +2,30 @@ package tarkov
 
 import (
 	"log"
-	"os"
 	"time"
 
 	"gitlab.clan-ac.xyz/ac-gameworx/radkov/pkg/unity"
 )
 
-var logger = log.New(os.Stdout, "TARKOV: ", 0)
+//
+// GameOffsets, subject to change.
+//
+var TarkovOffsets = unity.Offsets{
+	GameObjMgr:      0x17F8D28,
+	LastTaggedObj:   0,
+	FirstTaggedObj:  0x08,
+	LastActiveObj:   0x20,
+	FirstActiveObj:  0x28,
+	NextBaseObj:     0x08,
+	GameObject:      0x10,
+	GameObjectName:  0x60,
+	ObjectClass:     0x30,
+	Entity:          0x18,
+	BaseEntity:      0x28,
+	PlayerListClass: 0x80,
+	PlayerListObj:   0x10,
+	PlayerListData:  0x20,
+}
 
 func MonitorGame(offsets *unity.Offsets) error {
 	tg, err := AwaitGame(offsets)

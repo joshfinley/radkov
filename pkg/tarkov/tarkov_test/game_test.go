@@ -7,7 +7,7 @@ import (
 )
 
 func TestGameMain(t *testing.T) {
-	tg, err := tarkov.NewTarkovGame()
+	err := tarkov.MonitorGame(&tarkov.TarkovOffsets)
 	if err != nil {
 		t.FailNow()
 	}
@@ -15,6 +15,4 @@ func TestGameMain(t *testing.T) {
 	if err != nil {
 		t.FailNow()
 	}
-
-	t.Log(tg)
 }

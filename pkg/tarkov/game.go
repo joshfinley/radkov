@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"gitlab.clan-ac.xyz/ac-gameworx/radkov/pkg/unity"
+	"golang.org/x/sys/windows"
 )
 
 var logger = log.New(os.Stdout, "TARKOV: ", 0)
@@ -48,7 +49,7 @@ func NewTarkovGame() (*unity.UnityGame, error) {
 	err := unity.ErrorGameWorldNotFound
 	start := time.Now()
 	var elapsed time.Duration
-	for err == unity.ErrorGameWorldNotFound {
+	for err == unity.ErrorGameWorldNotFound || tg.LocalGameWorld == 0 {
 		err = tg.RefreshGameWorld()
 		// Dont burn up too many cycles waiting for game world
 		time.Sleep(500 * time.Millisecond)
@@ -60,7 +61,27 @@ func NewTarkovGame() (*unity.UnityGame, error) {
 	logger.Printf(
 		"Found GameWorld: 0x%x", tg.LocalGameWorld)
 
-	GetAllPlayers(tg)
+	//
+	// Find active players
+	//
+	players, err := GetAllPlayers(tg)
+	for err != nil {
+		if err == ErrorInvalidPlayerListSize {
+			goto next_gw
+		}
+		if err == windows.ERROR_PARTIAL_COPY {
+			goto next_gw
+		}
+		if err == windows.ERROR_NOACCESS {
+			goto next_gw
+		}
+	next_gw:
+		tg.NextGameWorld()
+		logger.Printf("Next game world: 0x%x", tg.LocalGameWorld)
+		players, err = GetAllPlayers(tg)
+	}
+
+	log.Println(players)
 
 	return tg, nil
 }
@@ -81,6 +102,10 @@ func GetAllPlayers(tg *unity.UnityGame) (*[]TarkovPlayer, error) {
 		plist + 0x18)
 	if err != nil {
 		return nil, err
+	}
+
+	if plistSize < 1 || plistSize > 30 {
+		return nil, ErrorInvalidPlayerListSize
 	}
 
 	plistObj, err := tg.Proc.ReadPtr64(

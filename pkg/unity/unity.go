@@ -68,6 +68,54 @@ func (ug *UnityGame) RefreshGameWorld() error {
 	return nil
 }
 
+// Advance the ug.LocalGameWorld to the next found GameWorld
+func (ug *UnityGame) NextGameWorld() error {
+	activeObj, err := ug.GetFirstActiveObj(
+		ug.GameObjectManager, ug.Offsets.FirstActiveObj)
+	if err != nil {
+		return err
+	}
+
+	i := 0
+	for uintptr(activeObj) != uintptr(ug.GameObjectManager) {
+		goto loop
+	inc:
+		{
+			i++
+			activeObj, err = ug.GetNextBaseObj(activeObj)
+			if err != nil {
+				return err
+			}
+			continue
+		}
+	loop:
+		// Prevent this from blocking if GameWorld not found
+		if i > 50000 {
+			return ErrorGameWorldNotFound
+		}
+		gameObj, err := ug.GetGameObj(uintptr(activeObj))
+		if err != nil {
+			goto inc
+		}
+
+		activeObjName, err := ug.GetGameObjName(gameObj)
+		if err != nil {
+			goto inc
+		}
+
+		//strObjName := string(activeObjName)
+		if strings.Contains(activeObjName, "GameWorld") {
+			if activeObj != ug.LocalGameWorld {
+				ug.LocalGameWorld = activeObj
+				return nil
+			}
+		}
+		goto inc
+	}
+
+	return errors.New("GameWorld not found")
+}
+
 // Get the GameWorld object from the GameObjectManager
 // Thanks to:
 // https://www.unknowncheats.me/forum/escape-from-tarkov/226519-escape-tarkov-reversal-structs-offsets-310.html#post3353153
@@ -112,7 +160,7 @@ func (ug *UnityGame) FindLocalGameWorld() (uintptr, error) {
 
 		//strObjName := string(activeObjName)
 		if strings.Contains(activeObjName, "GameWorld") {
-			return activeObj, nil
+			return ug.GetGameComponentAddr(gameObj)
 		}
 		goto inc
 	}

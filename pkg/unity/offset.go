@@ -22,6 +22,16 @@ type Offsets struct {
 	// Offsets from Object.ObjectClass
 	Entity     uintptr // e.g. 0x18
 	BaseEntity uintptr // e.g. 0x28
+
+	// Offsets from LocalGameWorld
+	PlayerListClass uintptr
+
+	// Offsets from LocalGameWorld->PlayerList
+	PlayerListObj  uintptr
+	PlayerListSize uintptr
+
+	// Offsets from PlayerList->PlayerListObj
+	PlayerListData uintptr
 }
 
 func ValidateOffsetStruct(os Offsets) error {

@@ -105,8 +105,13 @@ func (ug *UnityGame) NextGameWorld() error {
 
 		//strObjName := string(activeObjName)
 		if strings.Contains(activeObjName, "GameWorld") {
-			if activeObj != ug.LocalGameWorld {
-				ug.LocalGameWorld = activeObj
+			nextObj, err := ug.GetGameComponentAddr(gameObj)
+			if err == nil {
+				return err
+			}
+
+			if nextObj != ug.LocalGameWorld {
+				ug.LocalGameWorld = nextObj
 				return nil
 			}
 		}

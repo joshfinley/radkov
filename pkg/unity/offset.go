@@ -32,6 +32,31 @@ type Offsets struct {
 
 	// Offsets from PlayerList->PlayerListObj
 	PlayerListData uintptr
+
+	// Offsets from player
+	PlayerIsLocal         uintptr
+	PlayerProfile         uintptr
+	PlayerBody            uintptr
+	PlayerMovementCtx     uintptr
+	PlayerHandsController uintptr
+	PlayerHealth          uintptr
+
+	// Offsets from player movement context
+	MvmtCtxLocalPos uintptr
+
+	// Offsets from player profile
+	PlayerProfilePlayerID   uintptr
+	PlayerProfilePlayerInfo uintptr
+
+	// Offsets from PlayerProfile.PlayerInfo
+	PlayerInfoName         uintptr
+	PlayerInfoGroupID      uintptr
+	PlayerInfoCreationTime uintptr
+	PlayerInfoAcctType     uintptr
+
+	// Offsets from UnityEngineString
+	EngineStringSize uintptr
+	EngineStringData uintptr
 }
 
 func ValidateOffsetStruct(os Offsets) error {

@@ -11,20 +11,36 @@ import (
 // GameOffsets, subject to change.
 //
 var TarkovOffsets = unity.Offsets{
-	GameObjMgr:      0x17F8D28,
-	LastTaggedObj:   0,
-	FirstTaggedObj:  0x08,
-	LastActiveObj:   0x20,
-	FirstActiveObj:  0x28,
-	NextBaseObj:     0x08,
-	GameObject:      0x10,
-	GameObjectName:  0x60,
-	ObjectClass:     0x30,
-	Entity:          0x18,
-	BaseEntity:      0x28,
-	PlayerListClass: 0x80,
-	PlayerListObj:   0x10,
-	PlayerListData:  0x20,
+	GameObjMgr:              0x17F8D28,
+	LastTaggedObj:           0,
+	FirstTaggedObj:          0x08,
+	LastActiveObj:           0x20,
+	FirstActiveObj:          0x28,
+	NextBaseObj:             0x08,
+	GameObject:              0x10,
+	GameObjectName:          0x60,
+	ObjectClass:             0x30,
+	Entity:                  0x18,
+	BaseEntity:              0x28,
+	PlayerListClass:         0x80,
+	PlayerListObj:           0x10,
+	PlayerListSize:          0x18,
+	PlayerListData:          0x20,
+	PlayerIsLocal:           0x18,
+	PlayerProfile:           0x4B8,
+	PlayerBody:              0xa8,
+	PlayerMovementCtx:       0x40,
+	PlayerHandsController:   0x488,
+	PlayerHealth:            0x470,
+	MvmtCtxLocalPos:         0x210,
+	PlayerProfilePlayerID:   0x10,
+	PlayerProfilePlayerInfo: 0x28,
+	PlayerInfoName:          0x10,
+	PlayerInfoGroupID:       0x18,
+	PlayerInfoCreationTime:  0x54,
+	PlayerInfoAcctType:      0x60,
+	EngineStringSize:        0x10,
+	EngineStringData:        0x14,
 }
 
 func MonitorGame(offsets *unity.Offsets) error {
@@ -56,7 +72,9 @@ func MonitorGame(offsets *unity.Offsets) error {
 func AwaitGame(offsets *unity.Offsets) (*unity.UnityGame, error) {
 	tg, err := AwaitGameLaunch(offsets)
 	if err != nil {
-		return tg, err
+		if err != unity.ErrorGameWorldNotFound {
+			return tg, err
+		}
 	}
 
 	err = AwaitGameWorld(tg)
@@ -73,13 +91,24 @@ func AwaitGameWorld(tg *unity.UnityGame) error {
 	var err error = unity.ErrorGameWorldNotFound
 	for err == unity.ErrorGameWorldNotFound {
 		err = tg.RefreshGameWorld()
-		ready := CheckGameWorldReady(tg)
-		if err == nil && ready == true {
-			return nil
+
+		if err == nil {
+			break
 		}
+
+		time.Sleep(500 * time.Millisecond)
 	}
 
-	return err
+	ready := CheckGameWorldReady(tg)
+	for !ready {
+		tg.RefreshGameWorld()
+		time.Sleep(500 * time.Millisecond)
+		ready = CheckGameWorldReady(tg)
+
+	}
+
+	log.Printf("GameWorld found (0x%x)", tg.LocalGameWorld)
+	return nil
 }
 
 // Block until Game Process can be loaded
@@ -103,6 +132,13 @@ func AwaitGameLaunch(offsets *unity.Offsets) (*unity.UnityGame, error) {
 		time.Sleep(500 * time.Millisecond)
 	}
 
+	log.Printf(
+		"EscapeFromTarkov.exe found (process id: %d)",
+		tg.Proc.Pid)
+	log.Printf(
+		"Found UnityPlayer.dll (module base: 0x%x)",
+		tg.Mod.ModuleBase)
+
 	return tg, err
 }
 
@@ -112,10 +148,9 @@ func AwaitGameLaunch(offsets *unity.Offsets) (*unity.UnityGame, error) {
 // There could be smarter ways to do this
 func CheckGameWorldReady(tg *unity.UnityGame) bool {
 	for {
-		nplayers, err := GetPlayerListSize(tg)
+		nplayers, err := GetPlayerCount(tg)
 		if err != nil || nplayers < 1 || nplayers > 30 {
-			// Dont burn too many cycles waiting for match load
-			time.Sleep(500 * time.Millisecond)
+			return false
 		} else {
 			return true
 		}

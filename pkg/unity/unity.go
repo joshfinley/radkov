@@ -1,8 +1,11 @@
 package unity
 
 import (
+	"bytes"
+	"encoding/binary"
 	"errors"
 	"strings"
+	"syscall"
 
 	"gitlab.clan-ac.xyz/ac-gameworx/radkov/pkg/winutil"
 )
@@ -179,4 +182,32 @@ func (ug *UnityGame) GameWorldActive() bool {
 		return gameWorld != 0
 	}
 	return false
+}
+
+func (ug *UnityGame) ReadUnityEngineString(addr uintptr) (string, error) {
+	unityEngineStringHead, err := ug.Proc.ReadPtr64(addr)
+	if err != nil {
+		return "", err
+	}
+
+	stringSize, err := ug.Proc.ReadPtr32(
+		unityEngineStringHead + ug.Offsets.EngineStringSize)
+	if err != nil {
+		return "", ErrorEngineStringReadFailed
+	}
+
+	stringBuf, err := ug.Proc.Read(
+		unityEngineStringHead+ug.Offsets.EngineStringData, stringSize)
+	stringData := new(bytes.Buffer)
+	stringData.Write(stringBuf)
+
+	if stringData == nil {
+		return "", ErrorEngineStringReadFailed
+	}
+
+	stringDataUint16 := make([]uint16, 2*stringSize)
+	err = binary.Read(stringData, binary.LittleEndian, stringDataUint16)
+
+	out := syscall.UTF16ToString(stringDataUint16[:stringSize*2])
+	return out, nil
 }

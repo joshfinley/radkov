@@ -1,13 +1,11 @@
 package unity
 
 import (
-	"bytes"
-	"encoding/binary"
 	"errors"
 	"strings"
-	"syscall"
 
 	"gitlab.clan-ac.xyz/ac-gameworx/radkov/pkg/winutil"
+	"golang.org/x/text/encoding/unicode"
 )
 
 //
@@ -198,16 +196,19 @@ func (ug *UnityGame) ReadUnityEngineString(addr uintptr) (string, error) {
 
 	stringBuf, err := ug.Proc.Read(
 		unityEngineStringHead+ug.Offsets.EngineStringData, stringSize)
-	stringData := new(bytes.Buffer)
-	stringData.Write(stringBuf)
 
-	if stringData == nil {
+	if stringBuf == nil {
 		return "", ErrorEngineStringReadFailed
+	} else if err != nil {
+		return "", err
 	}
 
-	stringDataUint16 := make([]uint16, 2*stringSize)
-	err = binary.Read(stringData, binary.LittleEndian, stringDataUint16)
+	dec := unicode.UTF16(unicode.LittleEndian, unicode.UseBOM).NewDecoder()
+	out, err := dec.Bytes(stringBuf[0 : stringSize-1])
+	if err != nil {
+		return "", err
+	}
 
-	out := syscall.UTF16ToString(stringDataUint16[:stringSize*2])
-	return out, nil
+	s := string(out)
+	return s, err
 }

@@ -1,12 +1,23 @@
 package tarkov_test
 
 import (
+	"fmt"
 	"testing"
 
 	"gitlab.clan-ac.xyz/ac-gameworx/radkov/pkg/tarkov"
+	"gitlab.clan-ac.xyz/ac-gameworx/radkov/pkg/unity"
 )
 
 func TestMonitorGame(t *testing.T) {
+	pch := make(chan []unity.RawVec2)
+	go tarkov.MonitorGame(pch, &tarkov.TarkovOffsets)
+
+	for d := range pch {
+		fmt.Println(d[0].Unmarshal())
+	}
+}
+
+func TestMonitorGame2(t *testing.T) {
 	tg, err := tarkov.AwaitGame(&tarkov.TarkovOffsets)
 	if err != nil {
 		t.FailNow()

@@ -7,7 +7,7 @@ import (
 	"gitlab.clan-ac.xyz/ac-gameworx/radkov/pkg/unity"
 )
 
-func MonitorGame(ch chan<- unity.RawVec2, offsets *unity.Offsets) error {
+func MonitorGame(ch chan<- []unity.RawVec2, offsets *unity.Offsets) error {
 
 	tg, err := AwaitGame(offsets)
 	if err != nil {
@@ -52,9 +52,7 @@ func MonitorGame(ch chan<- unity.RawVec2, offsets *unity.Offsets) error {
 		}
 
 		// transmit player data
-		for _, v := range positions {
-			ch <- v
-		}
+		ch <- positions
 	}
 }
 

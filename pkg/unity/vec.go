@@ -40,6 +40,33 @@ type Matrix4x4 struct {
 	D Vec4
 }
 
+// Get Vec2 from array of bytes
+func (v *RawVec2) Unmarshal() *Vec2 {
+	x := v[0:4]
+	y := v[4:8]
+
+	fx := math.Float32frombits(
+		binary.LittleEndian.Uint32(x))
+	fy := math.Float32frombits(
+		binary.LittleEndian.Uint32(y))
+
+	return &Vec2{
+		X: fx,
+		Y: fy,
+	}
+}
+
+// Get array of bytes from Vec2
+func (v *Vec2) Marshal() *RawVec2 {
+	var raw RawVec2
+	binary.LittleEndian.PutUint32(
+		raw[0:4], math.Float32bits(v.X))
+	binary.LittleEndian.PutUint32(
+		raw[4:8], math.Float32bits(v.Y))
+
+	return &raw
+}
+
 // Get Vec3 from array of bytes
 func (v *RawVec3) Unmarshal() *Vec3 {
 	x := v[0:4]

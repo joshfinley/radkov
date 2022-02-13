@@ -94,6 +94,33 @@ func GetPlayerPointers(tg *unity.UnityGame) ([]uintptr, error) {
 	return players, nil
 }
 
+func GetPlayerPositions(tg *unity.UnityGame, players []uintptr) ([]unity.RawVec2, error) {
+	vecs := make([]unity.RawVec2, len(players))
+	for i, player := range players {
+		ctx, err := tg.Proc.ReadPtr64(
+			player + tg.Offsets.PlayerMovementCtx)
+		if player == 0 || err != nil {
+			continue
+		}
+
+		var posbuf []byte
+		posbuf, err = tg.Proc.Read(ctx+tg.Offsets.MvmtCtxLocalPos, 4*3)
+		if err != nil {
+			return nil, err
+		}
+
+		posx := posbuf[0:4]
+		posy := posbuf[8:12] // in tarkov, the y coordinate is vertical plane for some reason
+		posb := append(posx, posy...)
+		vec2 := unity.RawVec2{}
+		copy(vec2[:], posb)
+
+		vecs[i] = vec2
+	}
+
+	return vecs, nil
+}
+
 // TODO:
 // Add code to read Player Data from pointers collected by this
 // Will require refactoring most of this functions code into something

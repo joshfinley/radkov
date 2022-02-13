@@ -2,6 +2,7 @@ package tarkov
 
 import (
 	"log"
+	"sync"
 	"time"
 
 	"gitlab.clan-ac.xyz/ac-gameworx/radkov/pkg/unity"
@@ -32,7 +33,7 @@ var TarkovOffsets = unity.Offsets{
 	PlayerMovementCtx:       0x40,
 	PlayerHandsController:   0x488,
 	PlayerHealth:            0x470,
-	MvmtCtxLocalPos:         0x210,
+	MvmtCtxLocalPos:         0x23c,
 	PlayerProfilePlayerID:   0x10,
 	PlayerProfilePlayerInfo: 0x28,
 	PlayerInfoName:          0x10,
@@ -41,6 +42,10 @@ var TarkovOffsets = unity.Offsets{
 	PlayerInfoAcctType:      0x60,
 	EngineStringSize:        0x10,
 	EngineStringData:        0x14,
+}
+
+func MonitorGameAsync(wg sync.WaitGroup, ch chan<- unity.RawVec3) {
+	return
 }
 
 func MonitorGame(offsets *unity.Offsets) error {
@@ -54,11 +59,20 @@ func MonitorGame(offsets *unity.Offsets) error {
 	log.Printf("UnityPlayer.dll loaded (addr: 0x%x",
 		tg.Mod.ModuleBase)
 
-	for {
-		continue // placeholder until the below are completed
+	for tg.GameWorldActive() {
+		//continue // placeholder until the below are completed
 
 		// load all the players
-		// e.g. players == GetAllPlayers()
+		players, err := GetPlayerPointers(tg)
+		if err != nil {
+			return err
+		}
+
+		positions, err := GetPlayerPositions(tg, players)
+		if err != nil {
+			return err
+		}
+		log.Println(positions[0].Unmarshal())
 
 		// transmit player data
 		// e.g. server.publish(players)
@@ -66,6 +80,8 @@ func MonitorGame(offsets *unity.Offsets) error {
 		// check that the match is still active,
 		// if not, AwaitGame()
 	}
+
+	return nil
 }
 
 // Block until the game has been launched and a match has been entered
@@ -115,16 +131,10 @@ func AwaitGameWorld(tg *unity.UnityGame) error {
 func AwaitGameLaunch(offsets *unity.Offsets) (*unity.UnityGame, error) {
 	log.Println("Awaiting game startup")
 
-	tg := &unity.UnityGame{
-		Proc:              nil,
-		Mod:               nil,
-		GameObjectManager: 0,
-		LocalGameWorld:    0,
-		Offsets:           *offsets,
-	}
+	var tg *unity.UnityGame
 
 	var err error = nil
-	for tg.Proc == nil {
+	for tg == nil {
 		tg, err = unity.NewUnityGame(
 			"EscapeFromTarkov.exe",
 			*offsets)
@@ -146,6 +156,9 @@ func AwaitGameLaunch(offsets *unity.Offsets) (*unity.UnityGame, error) {
 // Returns true if player list size is a reasonable value
 // Watch out! This reads memory and doesnt really check errors
 // There could be smarter ways to do this
+//
+// TODO: Theres a bug in here somewhere... Sometimes this reports
+// the game world is ready before it truly is
 func CheckGameWorldReady(tg *unity.UnityGame) bool {
 	for {
 		nplayers, err := GetPlayerCount(tg)

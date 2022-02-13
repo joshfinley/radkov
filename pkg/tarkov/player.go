@@ -44,12 +44,15 @@ func GetPlayerInfoName(tg *unity.UnityGame, playerInfoAddr uintptr) (string, err
 		playerInfoAddr + tg.Offsets.PlayerInfoName)
 }
 
-func GetPlayerLocalPosition(tg *unity.UnityGame, player uintptr) (*unity.Vec3, error) {
+func GetPlayerPosition(tg *unity.UnityGame, player uintptr) (*unity.Vec3, error) {
 	ctx, err := tg.Proc.ReadPtr64(player + tg.Offsets.PlayerMovementCtx)
 	if err != nil {
 		return nil, err
 	}
 	posData, err := tg.Proc.Read(ctx+tg.Offsets.MvmtCtxLocalPos, 8*3)
+	if err != nil {
+		return nil, err
+	}
 	var vec unity.Vec3
 	posBytes := bytes.NewBuffer(posData)
 	binary.Read(posBytes, binary.LittleEndian, vec)

@@ -16,7 +16,7 @@ func TestMarshalVec3(t *testing.T) {
 	m := v.Marshal()
 	u := m.Unmarshal()
 
-	if *u != v {
+	if u != v {
 		t.FailNow()
 	}
 }

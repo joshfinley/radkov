@@ -12,7 +12,7 @@ func MonitorGameAsync(wg sync.WaitGroup, ch chan<- unity.RawVec3) {
 	return
 }
 
-func MonitorGame(offsets *unity.Offsets) error {
+func MonitorGame2(offsets *unity.Offsets) error {
 	tg, err := AwaitGame(offsets)
 	if err != nil {
 		log.Println(err)
@@ -23,11 +23,29 @@ func MonitorGame(offsets *unity.Offsets) error {
 	log.Printf("UnityPlayer.dll loaded (addr: 0x%x",
 		tg.Mod.ModuleBase)
 
-	for tg.GameWorldActive() {
-		//continue // placeholder until the below are completed
+	// get the initial list of players
+	players, err := GetPlayerPointers(tg)
+	if err != nil {
+		return err
+	}
+
+	if players == nil {
+		tg, err = AwaitGame(offsets)
+		if err != nil {
+			return err
+		}
+	}
+
+	for {
+		if !tg.GameWorldActive() {
+			tg, err = AwaitGame(offsets) // if the game world goes inactive, restart the wait
+			if err != nil {
+				log.Println(err)
+			}
+		}
 
 		// load all the players
-		players, err := GetPlayerPointers(tg)
+		players, err = GetPlayerPointers(tg)
 		if err != nil {
 			return err
 		}
@@ -44,8 +62,6 @@ func MonitorGame(offsets *unity.Offsets) error {
 		// check that the match is still active,
 		// if not, AwaitGame()
 	}
-
-	return nil
 }
 
 // Block until the game has been launched and a match has been entered

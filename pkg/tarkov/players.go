@@ -94,8 +94,8 @@ func GetPlayerPointers(tg *unity.UnityGame) ([]uintptr, error) {
 	return players, nil
 }
 
-func GetPlayerPositions(tg *unity.UnityGame, players []uintptr) ([]unity.RawVec2, error) {
-	vecs := make([]unity.RawVec2, len(players))
+func GetPlayerPositions(tg *unity.UnityGame, players []uintptr) ([][]byte, error) {
+	vecs := make([][]byte, len(players))
 	for i, player := range players {
 		ctx, err := tg.Proc.ReadPtr64(
 			player + tg.Offsets.PlayerMovementCtx)
@@ -112,10 +112,7 @@ func GetPlayerPositions(tg *unity.UnityGame, players []uintptr) ([]unity.RawVec2
 		posx := posbuf[0:4]
 		posy := posbuf[8:12] // in tarkov, the y coordinate is vertical plane for some reason
 		posb := append(posx, posy...)
-		vec2 := unity.RawVec2{}
-		copy(vec2[:], posb)
-
-		vecs[i] = vec2
+		vecs[i] = posb
 	}
 
 	return vecs, nil

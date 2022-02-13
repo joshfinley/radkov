@@ -9,11 +9,11 @@ import (
 )
 
 func TestMonitorGame(t *testing.T) {
-	pch := make(chan []unity.RawVec2)
+	pch := make(chan [][]byte)
 	go tarkov.MonitorGame(pch, &tarkov.TarkovOffsets)
 
 	for d := range pch {
-		fmt.Println(d[0].Unmarshal())
+		fmt.Println(unity.UnmarshalVec2(d[0]))
 	}
 }
 
@@ -57,8 +57,7 @@ func TestMonitorGame2(t *testing.T) {
 		if err != nil {
 			t.FailNow()
 		}
-		t.Log(positions[0].Unmarshal())
-
+		t.Log(unity.UnmarshalVec2(positions[0]))
 	}
 }
 

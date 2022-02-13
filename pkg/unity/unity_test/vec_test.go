@@ -13,8 +13,8 @@ func TestMarshalVec3(t *testing.T) {
 		Z: 3,
 	}
 
-	m := v.Marshal()
-	u := m.Unmarshal()
+	m := unity.MarshalVec3(v)
+	u := unity.UnmarshalVec3(m)
 
 	if u != v {
 		t.FailNow()

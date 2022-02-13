@@ -5,10 +5,6 @@ import (
 	"math"
 )
 
-type RawVec2 [8]byte
-type RawVec3 [12]byte
-type RawVec4 [18]byte
-
 type Vec2 struct {
 	X float32
 	Y float32
@@ -41,7 +37,7 @@ type Matrix4x4 struct {
 }
 
 // Get Vec2 from array of bytes
-func (v *RawVec2) Unmarshal() Vec2 {
+func UnmarshalVec2(v []byte) Vec2 {
 	x := v[0:4]
 	y := v[4:8]
 
@@ -57,8 +53,8 @@ func (v *RawVec2) Unmarshal() Vec2 {
 }
 
 // Get array of bytes from Vec2
-func (v *Vec2) Marshal() RawVec2 {
-	var raw RawVec2
+func MarshalVec2(v Vec2) []byte {
+	var raw []byte
 	binary.LittleEndian.PutUint32(
 		raw[0:4], math.Float32bits(v.X))
 	binary.LittleEndian.PutUint32(
@@ -68,7 +64,7 @@ func (v *Vec2) Marshal() RawVec2 {
 }
 
 // Get Vec3 from array of bytes
-func (v *RawVec3) Unmarshal() Vec3 {
+func UnmarshalVec3(v [12]byte) Vec3 {
 	x := v[0:4]
 	y := v[4:8]
 	z := v[8:12]
@@ -88,8 +84,8 @@ func (v *RawVec3) Unmarshal() Vec3 {
 }
 
 // Get array of bytes from Vec3
-func (v *Vec3) Marshal() RawVec3 {
-	var raw RawVec3
+func MarshalVec3(v Vec3) [12]byte {
+	var raw [12]byte
 	binary.LittleEndian.PutUint32(
 		raw[0:4], math.Float32bits(v.X))
 	binary.LittleEndian.PutUint32(

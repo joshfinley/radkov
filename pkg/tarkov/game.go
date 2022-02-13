@@ -2,17 +2,13 @@ package tarkov
 
 import (
 	"log"
-	"sync"
 	"time"
 
 	"gitlab.clan-ac.xyz/ac-gameworx/radkov/pkg/unity"
 )
 
-func MonitorGameAsync(wg sync.WaitGroup, ch chan<- unity.RawVec3) {
-	return
-}
+func MonitorGame(ch chan<- unity.RawVec2, offsets *unity.Offsets) error {
 
-func MonitorGame2(offsets *unity.Offsets) error {
 	tg, err := AwaitGame(offsets)
 	if err != nil {
 		log.Println(err)
@@ -54,13 +50,11 @@ func MonitorGame2(offsets *unity.Offsets) error {
 		if err != nil {
 			return err
 		}
-		log.Println(positions[0].Unmarshal())
 
 		// transmit player data
-		// e.g. server.publish(players)
-
-		// check that the match is still active,
-		// if not, AwaitGame()
+		for _, v := range positions {
+			ch <- v
+		}
 	}
 }
 

@@ -12,11 +12,6 @@ func TestMonitorGame(t *testing.T) {
 		t.FailNow()
 	}
 
-	t.Log("EscapeFromTarkov.exe process found (pid: %d)",
-		tg.Proc.Pid)
-	t.Log("UnityPlayer.dll loaded (addr: 0x%x",
-		tg.Mod.ModuleBase)
-
 	// get the initial list of players
 	players, err := tarkov.GetPlayerPointers(tg)
 	if err != nil {
@@ -53,11 +48,6 @@ func TestMonitorGame(t *testing.T) {
 		}
 		t.Log(positions[0].Unmarshal())
 
-		// transmit player data
-		// e.g. server.publish(players)
-
-		// check that the match is still active,
-		// if not, AwaitGame()
 	}
 }
 

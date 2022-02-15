@@ -18,7 +18,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ServerClient interface {
-	StreamPlayerPositions(ctx context.Context, opts ...grpc.CallOption) (Server_StreamPlayerPositionsClient, error)
+	PlayerPositionStream(ctx context.Context, opts ...grpc.CallOption) (Server_PlayerPositionStreamClient, error)
 }
 
 type serverClient struct {
@@ -29,30 +29,30 @@ func NewServerClient(cc grpc.ClientConnInterface) ServerClient {
 	return &serverClient{cc}
 }
 
-func (c *serverClient) StreamPlayerPositions(ctx context.Context, opts ...grpc.CallOption) (Server_StreamPlayerPositionsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Server_ServiceDesc.Streams[0], "/rkpb.Server/StreamPlayerPositions", opts...)
+func (c *serverClient) PlayerPositionStream(ctx context.Context, opts ...grpc.CallOption) (Server_PlayerPositionStreamClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Server_ServiceDesc.Streams[0], "/rkpb.Server/PlayerPositionStream", opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &serverStreamPlayerPositionsClient{stream}
+	x := &serverPlayerPositionStreamClient{stream}
 	return x, nil
 }
 
-type Server_StreamPlayerPositionsClient interface {
+type Server_PlayerPositionStreamClient interface {
 	Send(*PlayerPositions) error
 	Recv() (*Response, error)
 	grpc.ClientStream
 }
 
-type serverStreamPlayerPositionsClient struct {
+type serverPlayerPositionStreamClient struct {
 	grpc.ClientStream
 }
 
-func (x *serverStreamPlayerPositionsClient) Send(m *PlayerPositions) error {
+func (x *serverPlayerPositionStreamClient) Send(m *PlayerPositions) error {
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *serverStreamPlayerPositionsClient) Recv() (*Response, error) {
+func (x *serverPlayerPositionStreamClient) Recv() (*Response, error) {
 	m := new(Response)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
@@ -64,7 +64,7 @@ func (x *serverStreamPlayerPositionsClient) Recv() (*Response, error) {
 // All implementations must embed UnimplementedServerServer
 // for forward compatibility
 type ServerServer interface {
-	StreamPlayerPositions(Server_StreamPlayerPositionsServer) error
+	PlayerPositionStream(Server_PlayerPositionStreamServer) error
 	mustEmbedUnimplementedServerServer()
 }
 
@@ -72,8 +72,8 @@ type ServerServer interface {
 type UnimplementedServerServer struct {
 }
 
-func (UnimplementedServerServer) StreamPlayerPositions(Server_StreamPlayerPositionsServer) error {
-	return status.Errorf(codes.Unimplemented, "method StreamPlayerPositions not implemented")
+func (UnimplementedServerServer) PlayerPositionStream(Server_PlayerPositionStreamServer) error {
+	return status.Errorf(codes.Unimplemented, "method PlayerPositionStream not implemented")
 }
 func (UnimplementedServerServer) mustEmbedUnimplementedServerServer() {}
 
@@ -88,25 +88,25 @@ func RegisterServerServer(s grpc.ServiceRegistrar, srv ServerServer) {
 	s.RegisterService(&Server_ServiceDesc, srv)
 }
 
-func _Server_StreamPlayerPositions_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(ServerServer).StreamPlayerPositions(&serverStreamPlayerPositionsServer{stream})
+func _Server_PlayerPositionStream_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(ServerServer).PlayerPositionStream(&serverPlayerPositionStreamServer{stream})
 }
 
-type Server_StreamPlayerPositionsServer interface {
+type Server_PlayerPositionStreamServer interface {
 	Send(*Response) error
 	Recv() (*PlayerPositions, error)
 	grpc.ServerStream
 }
 
-type serverStreamPlayerPositionsServer struct {
+type serverPlayerPositionStreamServer struct {
 	grpc.ServerStream
 }
 
-func (x *serverStreamPlayerPositionsServer) Send(m *Response) error {
+func (x *serverPlayerPositionStreamServer) Send(m *Response) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func (x *serverStreamPlayerPositionsServer) Recv() (*PlayerPositions, error) {
+func (x *serverPlayerPositionStreamServer) Recv() (*PlayerPositions, error) {
 	m := new(PlayerPositions)
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
@@ -123,8 +123,8 @@ var Server_ServiceDesc = grpc.ServiceDesc{
 	Methods:     []grpc.MethodDesc{},
 	Streams: []grpc.StreamDesc{
 		{
-			StreamName:    "StreamPlayerPositions",
-			Handler:       _Server_StreamPlayerPositions_Handler,
+			StreamName:    "PlayerPositionStream",
+			Handler:       _Server_PlayerPositionStream_Handler,
 			ServerStreams: true,
 			ClientStreams: true,
 		},

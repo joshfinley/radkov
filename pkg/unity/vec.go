@@ -38,6 +38,10 @@ type Matrix4x4 struct {
 
 // Get Vec2 from array of bytes
 func UnmarshalVec2(v []byte) Vec2 {
+	if len(v) != 8 {
+		return Vec2{}
+	}
+
 	x := v[0:4]
 	y := v[4:8]
 

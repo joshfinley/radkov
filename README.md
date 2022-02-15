@@ -1,4 +1,6 @@
-# Radkov
+# radkov
+
+Rad as fuck Escape From Tarkov radar. 
 
 ```
 ├───pkg
@@ -12,5 +14,3 @@
 ├───radarsrv                -> radar web application backend
 └───tkovmon                 -> game memory monitor application
 ```
-
-

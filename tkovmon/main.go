@@ -16,6 +16,10 @@ func CheckFatal(err error) {
 	}
 }
 
+//
+// Program Entry Point
+//
+
 func main() {
 	// dial server
 	conn, err := grpc.Dial(
@@ -25,7 +29,7 @@ func main() {
 
 	// create stream and its chan
 	client := rkpb.NewServerClient(conn)
-	stream, err := client.StreamPlayerPositions(context.Background())
+	stream, err := client.PlayerPositionStream(context.Background())
 	CheckFatal(err)
 
 	pch := make(chan [][]byte)

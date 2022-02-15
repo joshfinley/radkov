@@ -1,21 +1,19 @@
-package main
+package radarapp
 
 import (
 	"io"
 	"log"
-	"net"
 
 	"gitlab.clan-ac.xyz/ac-gameworx/radkov/pkg/rkpb"
 	"gitlab.clan-ac.xyz/ac-gameworx/radkov/pkg/unity"
-	"google.golang.org/grpc"
 )
 
-type server struct {
+type Server struct {
 	rkpb.UnsafeServerServer
 }
 
-func (s server) StreamPlayerPositions(
-	srv rkpb.Server_StreamPlayerPositionsServer) error {
+func (s Server) PlayerPositionStream(
+	srv rkpb.Server_PlayerPositionStreamServer) error {
 	//
 	log.Println("starting streaming receiver")
 	ctx := srv.Context()
@@ -42,28 +40,15 @@ func (s server) StreamPlayerPositions(
 		vecs := post.RawVectors
 		log.Println("first vector received:",
 			unity.UnmarshalVec2(vecs[0]))
+
+		// copy the memory once and then forget about it
+		go GlobalGameState.SetPlayerPositions(vecs)
+
 		res := rkpb.Response{
 			Ok: true,
 		}
 		if err := srv.Send(&res); err != nil {
 			log.Printf("send error: %v", err)
 		}
-	}
-}
-
-func main() {
-	// create listener
-	lis, err := net.Listen("tcp", ":1337")
-	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
-	}
-
-	// create grpc server
-	s := grpc.NewServer()
-	rkpb.RegisterServerServer(s, &server{})
-
-	// start the server
-	if err := s.Serve(lis); err != nil {
-		log.Fatalf("failed to serve: %v", err)
 	}
 }

@@ -8,12 +8,12 @@ import (
 	"gitlab.clan-ac.xyz/ac-gameworx/radkov/pkg/unity"
 )
 
-type Server struct {
-	rkpb.UnsafeServerServer
+type RadarServer struct {
+	rkpb.UnsafeRadarServer
 }
 
-func (s Server) PlayerPositionStream(
-	srv rkpb.Server_PlayerPositionStreamServer) error {
+func (s RadarServer) StreamPlayerPositions(
+	srv rkpb.Radar_StreamPlayerPositionsServer) error {
 	//
 	log.Println("starting streaming receiver")
 	ctx := srv.Context()

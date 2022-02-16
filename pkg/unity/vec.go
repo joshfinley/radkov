@@ -68,7 +68,10 @@ func MarshalVec2(v Vec2) []byte {
 }
 
 // Get Vec3 from array of bytes
-func UnmarshalVec3(v [12]byte) Vec3 {
+func UnmarshalVec3(v []byte) Vec3 {
+	if len(v) != 12 {
+		return Vec3{}
+	}
 	x := v[0:4]
 	y := v[4:8]
 	z := v[8:12]
@@ -88,8 +91,8 @@ func UnmarshalVec3(v [12]byte) Vec3 {
 }
 
 // Get array of bytes from Vec3
-func MarshalVec3(v Vec3) [12]byte {
-	var raw [12]byte
+func MarshalVec3(v Vec3) []byte {
+	raw := make([]byte, 12)
 	binary.LittleEndian.PutUint32(
 		raw[0:4], math.Float32bits(v.X))
 	binary.LittleEndian.PutUint32(

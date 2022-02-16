@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Document</title>
+    <style>
+        #chart_div {
+            width: 1200px;
+        }
+        
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- CONTAINER FOR CHART -->
+    <div id="chart_div"></div>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script>
+
+        // load current chart package
+        google.charts.load("current", {
+            packages: ["corechart"]
+        });
+
+        // set callback function when api loaded
+        google.charts.setOnLoadCallback(drawChart);
+        
+
+        function drawChart() {
+
+            // create data object with default value
+            let data = google.visualization.arrayToDataTable([
+                ["X", "Y"],
+                [1, 1]
+            ]);
+
+            // create options object with titles, colors, etc.
+            let options = {
+                title: "Radkov - Rad Tarkov Radar",
+                hAxis: {
+                    title: "",
+                    minValue: -800, maxValue: 800,
+                },
+                vAxis: {
+                    title: "",
+                    minValue: -800, maxValue: 800,
+                },
+                width: 800,
+                height: 800,
+                scaleType: 'mirrorLog',
+            };
+
+            // draw chart on load
+            let chart = new google.visualization.ScatterChart(
+                document.getElementById("chart_div")
+            );
+            chart.draw(data, options);
+
+            // interval for adding new data every 250ms
+            let index = 0;
+            setInterval(function() {
+
+                //
+                // Get the data to chart
+                //
+
+                // TODO: Convert this to gRPC
+                var xhr = new XMLHttpRequest();
+                var url = 'http://localhost:80/players';
+                xhr.open("GET", url, true);
+
+                // function execute after req success
+                xhr.onreadystatechange = function() {
+                    if (this.readyState == 4 && this.status == 200) {
+                        rawData = JSON.parse(this.responseText);
+                        //console.log(rawData[0]['X'])
+                        for (let i = 0; i < rawData.length; i++) {
+                            let data = google.visualization.arrayToDataTable([
+                                ["X", "Y"],
+                                [1, 1]
+                            ]);
+                            //data = ["X", "Y"];
+                            console.log(rawData[i]['X']);
+                            data.addRows(rawData[i]['X'], rawData[i]['Y']);
+                        }
+                        
+                        //console.log(data);
+                        //data.addRow([index, random]);
+                        chart.draw(google.visualization.arrayToDataTable(rawData), options);
+                    }
+                }
+
+                xhr.send()
+                index++;
+            }, 250);
+
+        }
+    </script>
+</body>
+
+</html>

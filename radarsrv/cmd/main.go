@@ -22,12 +22,14 @@ func main() {
 
 	// create grpc server
 	s := grpc.NewServer()
-	rkpb.RegisterServerServer(s, &radarapp.Server{})
+	rkpb.RegisterRadarServer(s, radarapp.RadarServer{})
 
 	// create http server
+	// TODO: Development only code - should only use RPC services in final thing
 	router := radarapp.NewRadarService()
 	log.Println("starting web service on port 80")
 	go http.ListenAndServe(":80", &router)
+	//
 
 	// start the server
 	log.Println("starting rpc service on port 1337")

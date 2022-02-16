@@ -14,45 +14,45 @@ import (
 // Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
-// ServerClient is the client API for Server service.
+// RadarClient is the client API for Radar service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type ServerClient interface {
-	PlayerPositionStream(ctx context.Context, opts ...grpc.CallOption) (Server_PlayerPositionStreamClient, error)
+type RadarClient interface {
+	StreamPlayerPositions(ctx context.Context, opts ...grpc.CallOption) (Radar_StreamPlayerPositionsClient, error)
 }
 
-type serverClient struct {
+type radarClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewServerClient(cc grpc.ClientConnInterface) ServerClient {
-	return &serverClient{cc}
+func NewRadarClient(cc grpc.ClientConnInterface) RadarClient {
+	return &radarClient{cc}
 }
 
-func (c *serverClient) PlayerPositionStream(ctx context.Context, opts ...grpc.CallOption) (Server_PlayerPositionStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Server_ServiceDesc.Streams[0], "/rkpb.Server/PlayerPositionStream", opts...)
+func (c *radarClient) StreamPlayerPositions(ctx context.Context, opts ...grpc.CallOption) (Radar_StreamPlayerPositionsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Radar_ServiceDesc.Streams[0], "/rkpb.Radar/StreamPlayerPositions", opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &serverPlayerPositionStreamClient{stream}
+	x := &radarStreamPlayerPositionsClient{stream}
 	return x, nil
 }
 
-type Server_PlayerPositionStreamClient interface {
+type Radar_StreamPlayerPositionsClient interface {
 	Send(*PlayerPositions) error
 	Recv() (*Response, error)
 	grpc.ClientStream
 }
 
-type serverPlayerPositionStreamClient struct {
+type radarStreamPlayerPositionsClient struct {
 	grpc.ClientStream
 }
 
-func (x *serverPlayerPositionStreamClient) Send(m *PlayerPositions) error {
+func (x *radarStreamPlayerPositionsClient) Send(m *PlayerPositions) error {
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *serverPlayerPositionStreamClient) Recv() (*Response, error) {
+func (x *radarStreamPlayerPositionsClient) Recv() (*Response, error) {
 	m := new(Response)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
@@ -60,53 +60,53 @@ func (x *serverPlayerPositionStreamClient) Recv() (*Response, error) {
 	return m, nil
 }
 
-// ServerServer is the server API for Server service.
-// All implementations must embed UnimplementedServerServer
+// RadarServer is the server API for Radar service.
+// All implementations must embed UnimplementedRadarServer
 // for forward compatibility
-type ServerServer interface {
-	PlayerPositionStream(Server_PlayerPositionStreamServer) error
-	mustEmbedUnimplementedServerServer()
+type RadarServer interface {
+	StreamPlayerPositions(Radar_StreamPlayerPositionsServer) error
+	mustEmbedUnimplementedRadarServer()
 }
 
-// UnimplementedServerServer must be embedded to have forward compatible implementations.
-type UnimplementedServerServer struct {
+// UnimplementedRadarServer must be embedded to have forward compatible implementations.
+type UnimplementedRadarServer struct {
 }
 
-func (UnimplementedServerServer) PlayerPositionStream(Server_PlayerPositionStreamServer) error {
-	return status.Errorf(codes.Unimplemented, "method PlayerPositionStream not implemented")
+func (UnimplementedRadarServer) StreamPlayerPositions(Radar_StreamPlayerPositionsServer) error {
+	return status.Errorf(codes.Unimplemented, "method StreamPlayerPositions not implemented")
 }
-func (UnimplementedServerServer) mustEmbedUnimplementedServerServer() {}
+func (UnimplementedRadarServer) mustEmbedUnimplementedRadarServer() {}
 
-// UnsafeServerServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to ServerServer will
+// UnsafeRadarServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to RadarServer will
 // result in compilation errors.
-type UnsafeServerServer interface {
-	mustEmbedUnimplementedServerServer()
+type UnsafeRadarServer interface {
+	mustEmbedUnimplementedRadarServer()
 }
 
-func RegisterServerServer(s grpc.ServiceRegistrar, srv ServerServer) {
-	s.RegisterService(&Server_ServiceDesc, srv)
+func RegisterRadarServer(s grpc.ServiceRegistrar, srv RadarServer) {
+	s.RegisterService(&Radar_ServiceDesc, srv)
 }
 
-func _Server_PlayerPositionStream_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(ServerServer).PlayerPositionStream(&serverPlayerPositionStreamServer{stream})
+func _Radar_StreamPlayerPositions_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(RadarServer).StreamPlayerPositions(&radarStreamPlayerPositionsServer{stream})
 }
 
-type Server_PlayerPositionStreamServer interface {
+type Radar_StreamPlayerPositionsServer interface {
 	Send(*Response) error
 	Recv() (*PlayerPositions, error)
 	grpc.ServerStream
 }
 
-type serverPlayerPositionStreamServer struct {
+type radarStreamPlayerPositionsServer struct {
 	grpc.ServerStream
 }
 
-func (x *serverPlayerPositionStreamServer) Send(m *Response) error {
+func (x *radarStreamPlayerPositionsServer) Send(m *Response) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func (x *serverPlayerPositionStreamServer) Recv() (*PlayerPositions, error) {
+func (x *radarStreamPlayerPositionsServer) Recv() (*PlayerPositions, error) {
 	m := new(PlayerPositions)
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
@@ -114,17 +114,17 @@ func (x *serverPlayerPositionStreamServer) Recv() (*PlayerPositions, error) {
 	return m, nil
 }
 
-// Server_ServiceDesc is the grpc.ServiceDesc for Server service.
+// Radar_ServiceDesc is the grpc.ServiceDesc for Radar service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var Server_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "rkpb.Server",
-	HandlerType: (*ServerServer)(nil),
+var Radar_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "rkpb.Radar",
+	HandlerType: (*RadarServer)(nil),
 	Methods:     []grpc.MethodDesc{},
 	Streams: []grpc.StreamDesc{
 		{
-			StreamName:    "PlayerPositionStream",
-			Handler:       _Server_PlayerPositionStream_Handler,
+			StreamName:    "StreamPlayerPositions",
+			Handler:       _Radar_StreamPlayerPositions_Handler,
 			ServerStreams: true,
 			ClientStreams: true,
 		},

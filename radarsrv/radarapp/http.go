@@ -6,8 +6,14 @@ import (
 	"net/http"
 )
 
+// TODO: Development only code - should only use RPC services in final thing
 func NewRadarService() http.ServeMux {
 	router := http.ServeMux{}
+	router.Handle(
+		"/",
+		http.FileServer(
+			http.Dir("./radarapp/static")))
+
 	router.HandleFunc("/players", func(w http.ResponseWriter, r *http.Request) {
 		p, err := GlobalGameState.GetPlayerPositions()
 		if err != nil {

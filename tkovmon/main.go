@@ -28,8 +28,8 @@ func main() {
 	CheckFatal(err)
 
 	// create stream and its chan
-	client := rkpb.NewServerClient(conn)
-	stream, err := client.PlayerPositionStream(context.Background())
+	client := rkpb.NewRadarClient(conn)
+	stream, err := client.StreamPlayerPositions(context.Background())
 	CheckFatal(err)
 
 	pch := make(chan [][]byte)

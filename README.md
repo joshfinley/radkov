@@ -26,6 +26,8 @@ Rad as fuck Escape From Tarkov radar.
 - go >= 1.17.6 (lower versions not tested but may work)
 - protocol buffers compiler 3.19.4 (only needed if you need to rebuild the rkpb package)
 - make (optional)
+- go packages/modules: run: `go mod tidy`
+
 
 ## Running
 

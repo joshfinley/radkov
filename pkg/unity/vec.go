@@ -58,7 +58,7 @@ func UnmarshalVec2(v []byte) Vec2 {
 
 // Get array of bytes from Vec2
 func MarshalVec2(v Vec2) []byte {
-	var raw []byte
+	raw := make([]byte, 12)
 	binary.LittleEndian.PutUint32(
 		raw[0:4], math.Float32bits(v.X))
 	binary.LittleEndian.PutUint32(

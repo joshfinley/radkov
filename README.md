@@ -6,7 +6,7 @@ Rad as fuck Escape From Tarkov radar.
 
 ## Disclaimer
 
-This is not directly useable as a game cheat. It's written to directly read process memory using Windows APIs. Additionally, it's written for the SPT-AKI launcher, and its likely that the real game would require different offsets to access player info. Expect to be banned for trying to run this against the real game.
+This is not directly useable as a game cheat (and is not intended to be useable as one either). This is a hobby & curiosity project aimed to learn about how game cheats work and ways to write a code base around memory offset-based game hacking. The radar backend is written to directly read process memory using Windows APIs. Additionally, it's written for the SPT-AKI launcher, and its likely that the real game would require different offsets to access player info. Expect to be banned for trying to run this against the real game.
 
 ## Project Layout
 ```

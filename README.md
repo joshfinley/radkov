@@ -2,6 +2,8 @@
 
 Rad as fuck Escape From Tarkov radar. 
 
+![Alt Text](./tarkov-radar-demo.gif)
+
 ## Disclaimer
 
 This is not directly useable as a game cheat. It's written to directly read process memory using Windows APIs. Additionally, it's written for the SPT-AKI launcher, and its likely that the real game would require different offsets to access player info. Expect to be banned for trying to run this against the real game.

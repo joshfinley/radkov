@@ -1,6 +1,8 @@
 # radkov
 
-Rad as fuck Escape From Tarkov radar. 
+Rad as fuck Escape From Tarkov radar. Check out my blog post on this project for more details:
+
+https://joshfinley.github.io/game-hacking-writing-a-radar/
 
 ![Alt Text](./tarkov-radar-demo.gif)
 

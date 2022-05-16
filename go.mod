@@ -1,4 +1,4 @@
-module gitlab.clan-ac.xyz/ac-gameworx/radkov
+module github.com/joshfinley/radkov
 
 go 1.17
 

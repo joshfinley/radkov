@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"gitlab.clan-ac.xyz/ac-gameworx/radkov/pkg/tarkov"
-	"gitlab.clan-ac.xyz/ac-gameworx/radkov/pkg/unity"
+	"github.com/joshfinley/radkov/pkg/tarkov"
+	"github.com/joshfinley/radkov/pkg/unity"
 )
 
 func TestMonitorGame(t *testing.T) {

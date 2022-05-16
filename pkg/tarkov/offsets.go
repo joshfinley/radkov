@@ -1,6 +1,6 @@
 package tarkov
 
-import "gitlab.clan-ac.xyz/ac-gameworx/radkov/pkg/unity"
+import "github.com/joshfinley/radkov/pkg/unity"
 
 //
 // GameOffsets, subject to change.

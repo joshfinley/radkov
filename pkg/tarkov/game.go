@@ -4,7 +4,7 @@ import (
 	"log"
 	"time"
 
-	"gitlab.clan-ac.xyz/ac-gameworx/radkov/pkg/unity"
+	"github.com/joshfinley/radkov/pkg/unity"
 )
 
 func MonitorGame(ch chan<- [][]byte, offsets *unity.Offsets) error {

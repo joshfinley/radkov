@@ -3,7 +3,7 @@ package winutil_test
 import (
 	"testing"
 
-	"gitlab.clan-ac.xyz/ac-gameworx/radkov/pkg/winutil"
+	"github.com/joshfinley/radkov/pkg/winutil"
 )
 
 func TestNewWinProc(t *testing.T) {

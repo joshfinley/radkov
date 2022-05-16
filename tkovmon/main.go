@@ -4,8 +4,8 @@ import (
 	"context"
 	"log"
 
-	"gitlab.clan-ac.xyz/ac-gameworx/radkov/pkg/rkpb"
-	"gitlab.clan-ac.xyz/ac-gameworx/radkov/pkg/tarkov"
+	"github.com/joshfinley/radkov/pkg/rkpb"
+	"github.com/joshfinley/radkov/pkg/tarkov"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )

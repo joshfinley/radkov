@@ -4,8 +4,8 @@ import (
 	"io"
 	"log"
 
-	"gitlab.clan-ac.xyz/ac-gameworx/radkov/pkg/rkpb"
-	"gitlab.clan-ac.xyz/ac-gameworx/radkov/pkg/unity"
+	"github.com/joshfinley/radkov/pkg/rkpb"
+	"github.com/joshfinley/radkov/pkg/unity"
 )
 
 type RadarServer struct {

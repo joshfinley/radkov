@@ -3,7 +3,7 @@ package unity_test
 import (
 	"testing"
 
-	"gitlab.clan-ac.xyz/ac-gameworx/radkov/pkg/unity"
+	"github.com/joshfinley/radkov/pkg/unity"
 )
 
 func TestNewUnityGame(t *testing.T) {

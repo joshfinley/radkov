@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"testing"
 
-	"gitlab.clan-ac.xyz/ac-gameworx/radkov/pkg/rkpb"
-	"gitlab.clan-ac.xyz/ac-gameworx/radkov/radarsrv/radarapp"
+	"github.com/joshfinley/radkov/pkg/rkpb"
+	"github.com/joshfinley/radkov/radarsrv/radarapp"
 	"google.golang.org/grpc"
 )
 

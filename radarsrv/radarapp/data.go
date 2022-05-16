@@ -4,7 +4,7 @@ import (
 	"errors"
 	"sync"
 
-	"gitlab.clan-ac.xyz/ac-gameworx/radkov/pkg/unity"
+	"github.com/joshfinley/radkov/pkg/unity"
 	"golang.org/x/sync/errgroup"
 )
 

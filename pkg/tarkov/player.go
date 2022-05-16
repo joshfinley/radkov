@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 
-	"gitlab.clan-ac.xyz/ac-gameworx/radkov/pkg/unity"
+	"github.com/joshfinley/radkov/pkg/unity"
 )
 
 // type TarkovPlayer struct {

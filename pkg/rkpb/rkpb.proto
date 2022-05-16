@@ -7,7 +7,7 @@
 */
 syntax = "proto3";
 package rkpb;
-option go_package = "gitlab.clan-ac.xyz/ac-gameworx/radkov/pkg/rkpb";
+option go_package = "github.com/joshfinley/radkov/pkg/rkpb";
 
 // Radkov Service 
 service Radar {

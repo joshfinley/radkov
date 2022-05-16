@@ -3,7 +3,7 @@ package tarkov
 import (
 	"encoding/binary"
 
-	"gitlab.clan-ac.xyz/ac-gameworx/radkov/pkg/unity"
+	"github.com/joshfinley/radkov/pkg/unity"
 )
 
 func GetPlayerListInstance(tg *unity.UnityGame) (uintptr, error) {
